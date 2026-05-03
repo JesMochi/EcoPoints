@@ -170,14 +170,14 @@ export async function getDashboardStats(
     getTransaccionesByUser(userId, 5),
   ]);
 
-  const txs = todasTx.data || [];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const txs = (todasTx.data || []) as any[];
   const kg_reciclados =
     Math.round(txs.reduce((s, t) => s + Number(t.peso_kg), 0) * 100) / 100;
   const co2_evitado =
     Math.round(
       txs.reduce((s, t) => {
-        const co2 = (t.materiales as { co2_evitado_por_kg: number } | null)
-          ?.co2_evitado_por_kg ?? 2;
+        const co2 = t.materiales?.co2_evitado_por_kg ?? 2;
         return s + Number(t.peso_kg) * co2;
       }, 0) * 100
     ) / 100;
@@ -298,7 +298,8 @@ export async function getImpactMetrics(): Promise<ImpactMetrics> {
 
   if (txResult.error) throw txResult.error;
 
-  const txs = txResult.data || [];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const txs = (txResult.data || []) as any[];
 
   const total_kg_reciclados =
     Math.round(txs.reduce((s, t) => s + Number(t.peso_kg), 0) * 100) / 100;
@@ -306,8 +307,7 @@ export async function getImpactMetrics(): Promise<ImpactMetrics> {
   const total_co2_evitado =
     Math.round(
       txs.reduce((s, t) => {
-        const co2 = (t.materiales as { co2_evitado_por_kg: number } | null)
-          ?.co2_evitado_por_kg ?? 2;
+        const co2 = t.materiales?.co2_evitado_por_kg ?? 2;
         return s + Number(t.peso_kg) * co2;
       }, 0) * 100
     ) / 100;
@@ -315,8 +315,7 @@ export async function getImpactMetrics(): Promise<ImpactMetrics> {
   // Distribución por material
   const matMap = new Map<string, number>();
   txs.forEach((t) => {
-    const nombre =
-      (t.materiales as { nombre: string } | null)?.nombre ?? "Otro";
+    const nombre = t.materiales?.nombre ?? "Otro";
     matMap.set(nombre, (matMap.get(nombre) ?? 0) + Number(t.peso_kg));
   });
   const distribucion_materiales = Array.from(matMap.entries()).map(
